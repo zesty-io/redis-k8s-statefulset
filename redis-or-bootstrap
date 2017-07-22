@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# stateful hostnames are in the form of my-name-0
+hostname="$(hostname)"
+ordinal="${hostname##*-}"
+
+if [ -z "$ordinal" ]; then
+    echo "error: could not determine statefulset ordinal from hostname: $hostname"
+    exit 99
+fi
+
+bootstrap_conf_path="$REDIS_BOOTSTRAP_PATH/$ordinal"
+
+if [ -z "$REDIS_CONF_PATH" -o -z "$bootstrap_conf_path" ]; then
+    echo "required: configuration path and template configuration path"
+    exit 98
+fi
+
+if [ ! -f "$bootstrap_conf_path" ]; then
+    echo "required: configuration bootstrap at $bootstrap_conf_path"
+    exit 97
+fi
+
+if [ ! -f "$REDIS_CONF_PATH" ]; then
+    mkdir -p "$(dirname "$REDIS_CONF_PATH")"
+    cp "$bootstrap_conf_path" "$REDIS_CONF_PATH"
+fi
+
+echo "passing args to redis-server: $REDIS_CONF_PATH $*"
+exec redis-server "$REDIS_CONF_PATH" $*
