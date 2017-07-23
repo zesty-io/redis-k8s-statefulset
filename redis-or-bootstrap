@@ -3,31 +3,48 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# stateful hostnames are in the form of my-name-0
-hostname="$(hostname)"
-ordinal="${hostname##*-}"
+# Possible env vars:
+# REDIS_ORDINAL_BOOTSTRAP_PATH - directory which contains ordinal bootstrap config files
+# REDIS_BOOTSTRAP_PATH - path to file used as bootstrap
+# REDIS_CONF_PATH - path to redis.conf used by redis
 
-if [ -z "$ordinal" ]; then
-    echo "error: could not determine statefulset ordinal from hostname: $hostname"
+
+if [ -z "$REDIS_CONF_PATH" ]; then
+    echo "required: configuration path and template configuration path"
     exit 99
 fi
 
-bootstrap_conf_path="$REDIS_BOOTSTRAP_PATH/$ordinal"
-
-if [ -z "$REDIS_CONF_PATH" -o -z "$bootstrap_conf_path" ]; then
-    echo "required: configuration path and template configuration path"
+if [ -z "$REDIS_BOOTSTRAP_PATH" -a -z "$REDIS_ORDINAL_BOOTSTRAP_PATH" ]; then
+    echo "Required: at least one of REDIS_ORDINAL_BOOTSTRAP_PATH, REDIS_BOOTSTRAP_PATH"
     exit 98
 fi
 
-if [ ! -f "$bootstrap_conf_path" ]; then
-    echo "required: configuration bootstrap at $bootstrap_conf_path"
-    exit 97
+bootstrap_conf_path="$REDIS_BOOTSTRAP_PATH"
+
+if [ -z "$REDIS_BOOTSTRAP_PATH" ]; then
+
+    # stateful hostnames are in the form of my-name-0
+    hostname="$(hostname)"
+    ordinal="${hostname##*-}"
+
+    if [ -z "$ordinal" ]; then
+        echo "error: could not determine statefulset ordinal from hostname: $hostname"
+        exit 97
+    fi
+
+    bootstrap_conf_path="$REDIS_ORDINAL_BOOTSTRAP_PATH/$ordinal"
+
 fi
 
 if [ ! -f "$REDIS_CONF_PATH" ]; then
+
+    if [ ! -f "$bootstrap_conf_path" ]; then
+        echo "failed to find configuration bootstrap at $bootstrap_conf_path"
+        exit 96
+    fi
+
     mkdir -p "$(dirname "$REDIS_CONF_PATH")"
     cp "$bootstrap_conf_path" "$REDIS_CONF_PATH"
 fi
 
-echo "passing args to redis-server: $REDIS_CONF_PATH $*"
 exec redis-server "$REDIS_CONF_PATH" $*
