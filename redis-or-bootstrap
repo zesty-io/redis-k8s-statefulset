@@ -9,19 +9,19 @@ IFS=$'\n\t'
 # REDIS_CONF_PATH - path to redis.conf used by redis
 
 
-if [ -z "$REDIS_CONF_PATH" ]; then
+if [ -z "${REDIS_CONF_PATH-}" ]; then
     echo "required: configuration path and template configuration path"
     exit 99
 fi
 
-if [ -z "$REDIS_BOOTSTRAP_PATH" -a -z "$REDIS_ORDINAL_BOOTSTRAP_PATH" ]; then
+if [ -z "${REDIS_BOOTSTRAP_PATH-}" -a -z "${REDIS_ORDINAL_BOOTSTRAP_PATH-}" ]; then
     echo "Required: at least one of REDIS_ORDINAL_BOOTSTRAP_PATH, REDIS_BOOTSTRAP_PATH"
     exit 98
 fi
 
-bootstrap_conf_path="$REDIS_BOOTSTRAP_PATH"
+bootstrap_conf_path="${REDIS_BOOTSTRAP_PATH-}"
 
-if [ -z "$REDIS_BOOTSTRAP_PATH" ]; then
+if [ -z "${REDIS_BOOTSTRAP_PATH-}" ]; then
 
     # stateful hostnames are in the form of my-name-0
     hostname="$(hostname)"
@@ -32,7 +32,7 @@ if [ -z "$REDIS_BOOTSTRAP_PATH" ]; then
         exit 97
     fi
 
-    bootstrap_conf_path="$REDIS_ORDINAL_BOOTSTRAP_PATH/$ordinal"
+    bootstrap_conf_path="${REDIS_ORDINAL_BOOTSTRAP_PATH-}/$ordinal"
 
 fi
 
