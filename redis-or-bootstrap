@@ -36,6 +36,8 @@ if [ -z "${REDIS_BOOTSTRAP_PATH-}" ]; then
 
 fi
 
+echo "using bootstrap_conf_path of $bootstrap_conf_path"
+
 if [ ! -f "$REDIS_CONF_PATH" ]; then
 
     if [ ! -f "$bootstrap_conf_path" ]; then
