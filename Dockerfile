@@ -1,6 +1,5 @@
-FROM redis:4-alpine
+FROM redis:4.0
 ENTRYPOINT ["/app/redis-or-bootstrap"]
-RUN apk --update --no-cache add bash
 
 COPY redis-or-bootstrap /app/redis-or-bootstrap
-USER guest
+USER redis
