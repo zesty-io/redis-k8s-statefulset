@@ -3,9 +3,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Possible env vars:
+# Requires one of these env vars:
 # REDIS_ORDINAL_BOOTSTRAP_PATH - directory which contains ordinal bootstrap config files
 # REDIS_BOOTSTRAP_PATH - path to file used as bootstrap
+#
+# Required:
 # REDIS_CONF_PATH - path to redis.conf used by redis
 
 
